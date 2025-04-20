@@ -117,7 +117,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login with email
   const loginWithEmail = async (email: string, password: string) => {
     try {
-      await signInWithEmail(email, password);
+      const userCredential = await signInWithEmail(email, password);
+      
+      // Establish session with our server
+      const idToken = await userCredential.user.getIdToken();
+      const response = await apiRequest("POST", "/api/firebase-auth", {
+        firebase_uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        auth_type: "email",
+        full_name: userCredential.user.displayName,
+        profile_picture: userCredential.user.photoURL,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to authenticate with server");
+      }
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
       toast({
         title: "Login successful!",
         description: "Welcome back!",
@@ -135,7 +153,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login with Google
   const loginWithGoogle = async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      
+      // Establish session with our server
+      const idToken = await result.user.getIdToken();
+      const response = await apiRequest("POST", "/api/firebase-auth", {
+        firebase_uid: result.user.uid,
+        email: result.user.email,
+        auth_type: "google",
+        full_name: result.user.displayName,
+        profile_picture: result.user.photoURL,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to authenticate with server");
+      }
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
       toast({
         title: "Login successful!",
         description: "Welcome back!",
@@ -153,7 +189,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login with GitHub
   const loginWithGithub = async () => {
     try {
-      await signInWithGithub();
+      const result = await signInWithGithub();
+      
+      // Establish session with our server
+      const idToken = await result.user.getIdToken();
+      const response = await apiRequest("POST", "/api/firebase-auth", {
+        firebase_uid: result.user.uid,
+        email: result.user.email,
+        auth_type: "github",
+        full_name: result.user.displayName,
+        profile_picture: result.user.photoURL,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to authenticate with server");
+      }
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
       toast({
         title: "Login successful!",
         description: "Welcome back!",

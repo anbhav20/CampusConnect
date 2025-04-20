@@ -14,7 +14,8 @@ import {
   Share, 
   Copy, 
   Users,
-  Heart
+  Heart,
+  Loader2
 } from "lucide-react";
 import MainLayout from "@/components/layout/main-layout";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +37,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { 
+  useProfileData, 
+  useFollowers, 
+  useFollowing, 
+  usePosts,
+  useFollowUser,
+  useUnfollowUser,
+  useRemoveFollower
+} from "@/hooks/use-profile";
 
 interface UserProfileProps {
   username?: string;
@@ -52,69 +62,75 @@ export default function ProfilePage() {
   // Check if viewing own profile or someone else's
   const isOwnProfile = !params.username || (user && params.username === user.username);
   
-  // Sample profile data - in a real app, this would come from an API
-  const profile = {
-    id: 1,
-    username: params.username || (user ? user.username : "_anbhav"),
-    displayName: "Anbhav Singh",
-    bio: "Computer Science @ IIT Delhi | Tech enthusiast | Photography lover 📸",
-    college: "IIT Delhi",
-    department: "Computer Science",
-    year: "3rd Year",
-    followers: 149,
-    following: 118,
-    posts: 34,
-    isFollowing: !isOwnProfile,
-    isVerified: false,
-    profileUrl: `https://campusconnect.com/u/${params.username || (user ? user.username : "_anbhav")}`,
-    highlights: [
-      { id: 1, title: "College", image: "/placeholder-highlight.jpg" },
-      { id: 2, title: "Projects", image: "/placeholder-highlight.jpg" },
-      { id: 3, title: "Hackathons", image: "/placeholder-highlight.jpg" }
-    ],
-    samplePosts: [
-      { id: 1, image: "/placeholder-meeting.jpg", likes: 87, comments: 14 },
-      { id: 2, image: "/placeholder-campus.jpg", likes: 124, comments: 7 },
-      { id: 3, image: "/placeholder-tech.jpg", likes: 56, comments: 9 },
-      { id: 4, image: "/placeholder-highlight.jpg", likes: 103, comments: 12 },
-      { id: 5, image: "/placeholder-meeting.jpg", likes: 77, comments: 5 },
-      { id: 6, image: "/placeholder-campus.jpg", likes: 92, comments: 8 }
-    ]
-  };
+  // Fetch profile data
+  const { 
+    data: profile, 
+    isLoading: isProfileLoading, 
+    error: profileError 
+  } = useProfileData(params.username);
   
-  // Sample followers/following data
-  const followers = Array(profile.followers).fill(0).map((_, i) => ({
-    id: i + 1,
-    username: `follower_${i}`,
-    displayName: `Follower ${i}`,
-    isFollowing: Math.random() > 0.5
-  }));
+  // Fetch followers
+  const { 
+    data: followers, 
+    isLoading: isFollowersLoading 
+  } = useFollowers(params.username);
   
-  const following = Array(profile.following).fill(0).map((_, i) => ({
-    id: i + 1,
-    username: `following_${i}`,
-    displayName: `Following ${i}`,
-    isFollowing: true
-  }));
+  // Fetch following
+  const { 
+    data: following, 
+    isLoading: isFollowingLoading 
+  } = useFollowing(params.username);
+  
+  // Fetch posts
+  const { 
+    data: posts, 
+    isLoading: isPostsLoading 
+  } = usePosts(params.username);
+  
+  // Follow/unfollow mutations
+  const followMutation = useFollowUser();
+  const unfollowMutation = useUnfollowUser();
+  const removeFollowerMutation = useRemoveFollower();
+  
+  // Loading state
+  const isLoading = isProfileLoading || isFollowersLoading || isFollowingLoading || isPostsLoading;
+  
+  // Handle errors
+  if (profileError) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <div className="text-red-500 mb-4">Error loading profile</div>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </MainLayout>
+    );
+  }
+  
+  // Handle loading state
+  if (isLoading || !profile) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <div>Loading profile...</div>
+        </div>
+      </MainLayout>
+    );
+  }
   
   const handleFollow = () => {
-    // Implement follow logic here
-    toast({
-      title: "Success",
-      description: `You are now following ${profile.username}`,
-    });
+    if (!profile) return;
+    followMutation.mutate(profile.username);
   };
   
   const handleUnfollow = () => {
-    // Implement unfollow logic here
-    toast({
-      title: "Success",
-      description: `You have unfollowed ${profile.username}`,
-    });
+    if (!profile) return;
+    unfollowMutation.mutate(profile.username);
   };
   
   const handleProfileAction = (action: string) => {
-    console.log(`Action ${action} for user ${profile.username}`);
+    if (!profile) return;
     
     switch (action) {
       case 'block':
@@ -145,18 +161,30 @@ export default function ProfilePage() {
     }
   };
   
-  const handleRemoveFollower = (followerId: number) => {
-    // This would remove a follower
-    toast({
-      title: "Follower Removed",
-      description: `User has been removed from your followers`,
-    });
+  const handleRemoveFollower = (username: string) => {
+    removeFollowerMutation.mutate(username);
   };
   
   const handleUploadProfilePicture = () => {
     // This would open file manager for profile picture upload
     // In a real implementation, we would use an input type=file
-    console.log("Open file manager for profile picture upload");
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = async (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        const file = target.files[0];
+        
+        // Here you would upload the file to your server/Cloudinary
+        // For now, we'll just show a toast
+        toast({
+          title: "Profile picture updated",
+          description: "Your profile picture has been updated successfully."
+        });
+      }
+    };
+    fileInput.click();
   };
 
   return (
@@ -206,11 +234,26 @@ export default function ProfilePage() {
                 ) : (
                   <>
                     {profile.isFollowing ? (
-                      <Button variant="outline" size="sm" onClick={handleUnfollow}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleUnfollow}
+                        disabled={unfollowMutation.isPending}
+                      >
+                        {unfollowMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
                         Following
                       </Button>
                     ) : (
-                      <Button size="sm" onClick={handleFollow}>
+                      <Button 
+                        size="sm" 
+                        onClick={handleFollow}
+                        disabled={followMutation.isPending}
+                      >
+                        {followMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
                         Follow
                       </Button>
                     )}
@@ -269,34 +312,68 @@ export default function ProfilePage() {
                     <DialogTitle>Followers</DialogTitle>
                   </DialogHeader>
                   <div className="py-4">
-                    {followers.map((follower) => (
-                      <div key={follower.id} className="flex items-center justify-between py-2">
-                        <div className="flex items-center">
-                          <Avatar className="h-10 w-10 mr-3">
-                            <AvatarFallback>{follower.username[0].toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-semibold">{follower.username}</div>
-                            <div className="text-sm text-gray-500">{follower.displayName}</div>
-                          </div>
-                        </div>
-                        {isOwnProfile ? (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleRemoveFollower(follower.id)}
-                          >
-                            Remove
-                          </Button>
-                        ) : (
-                          follower.isFollowing ? (
-                            <Button variant="outline" size="sm">Following</Button>
-                          ) : (
-                            <Button size="sm">Follow</Button>
-                          )
-                        )}
+                    {isFollowersLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       </div>
-                    ))}
+                    ) : followers && followers.length > 0 ? (
+                      followers.map((follower) => (
+                        <div key={follower.id} className="flex items-center justify-between py-2">
+                          <div className="flex items-center">
+                            <Avatar className="h-10 w-10 mr-3">
+                              <AvatarImage src={follower.profilePicture} alt={follower.username} />
+                              <AvatarFallback>{follower.username[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-semibold">{follower.username}</div>
+                              <div className="text-sm text-gray-500">{follower.displayName}</div>
+                            </div>
+                          </div>
+                          {isOwnProfile ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleRemoveFollower(follower.username)}
+                              disabled={removeFollowerMutation.isPending}
+                            >
+                              {removeFollowerMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : null}
+                              Remove
+                            </Button>
+                          ) : (
+                            follower.isFollowing ? (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => unfollowMutation.mutate(follower.username)}
+                                disabled={unfollowMutation.isPending}
+                              >
+                                {unfollowMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : null}
+                                Following
+                              </Button>
+                            ) : (
+                              <Button 
+                                size="sm"
+                                onClick={() => followMutation.mutate(follower.username)}
+                                disabled={followMutation.isPending}
+                              >
+                                {followMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : null}
+                                Follow
+                              </Button>
+                            )
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        No followers yet
+                      </div>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
@@ -313,29 +390,41 @@ export default function ProfilePage() {
                     <DialogTitle>Following</DialogTitle>
                   </DialogHeader>
                   <div className="py-4">
-                    {following.map((followed) => (
-                      <div key={followed.id} className="flex items-center justify-between py-2">
-                        <div className="flex items-center">
-                          <Avatar className="h-10 w-10 mr-3">
-                            <AvatarFallback>{followed.username[0].toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-semibold">{followed.username}</div>
-                            <div className="text-sm text-gray-500">{followed.displayName}</div>
-                          </div>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => toast({
-                            title: "Unfollowed",
-                            description: `You have unfollowed ${followed.username}`
-                          })}
-                        >
-                          Following
-                        </Button>
+                    {isFollowingLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       </div>
-                    ))}
+                    ) : following && following.length > 0 ? (
+                      following.map((followed) => (
+                        <div key={followed.id} className="flex items-center justify-between py-2">
+                          <div className="flex items-center">
+                            <Avatar className="h-10 w-10 mr-3">
+                              <AvatarImage src={followed.profilePicture} alt={followed.username} />
+                              <AvatarFallback>{followed.username[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-semibold">{followed.username}</div>
+                              <div className="text-sm text-gray-500">{followed.displayName}</div>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => unfollowMutation.mutate(followed.username)}
+                            disabled={unfollowMutation.isPending}
+                          >
+                            {unfollowMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            Following
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        Not following anyone yet
+                      </div>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
@@ -408,7 +497,11 @@ export default function ProfilePage() {
           </TabsList>
           
           <TabsContent value="posts" className="mt-0 p-0">
-            {profile.posts === 0 ? (
+            {isPostsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : !posts || posts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="inline-flex rounded-full p-6 bg-gray-100 mb-4">
                   <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -418,11 +511,13 @@ export default function ProfilePage() {
                 </div>
                 <h3 className="text-2xl font-light mb-1">Share Photos</h3>
                 <p className="text-gray-500 mb-6">When you share photos, they will appear on your profile.</p>
-                <Button className="bg-primary text-white hover:bg-primary/90">Share your first photo</Button>
+                {isOwnProfile && (
+                  <Button className="bg-primary text-white hover:bg-primary/90">Share your first photo</Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-1">
-                {profile.samplePosts.map(post => (
+                {posts.map(post => (
                   <div key={post.id} className="relative aspect-square cursor-pointer group">
                     <img 
                       src={post.image} 

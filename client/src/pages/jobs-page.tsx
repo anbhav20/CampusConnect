@@ -37,8 +37,8 @@ export default function JobsPage() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState({
-    type: "",
-    location: "",
+    type: "all",
+    location: "all",
     salary: ""
   });
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null);
@@ -234,8 +234,8 @@ export default function JobsPage() {
         job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.description.toLowerCase().includes(searchQuery.toLowerCase());
         
-      const matchesType = !filter.type || job.type === filter.type;
-      const matchesLocation = !filter.location || job.location.includes(filter.location);
+      const matchesType = !filter.type || filter.type === "all" || job.type === filter.type;
+      const matchesLocation = !filter.location || filter.location === "all" || job.location.includes(filter.location);
       
       return matchesSearch && matchesType && matchesLocation;
     });
@@ -299,7 +299,7 @@ export default function JobsPage() {
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="Full-time">Full-time</SelectItem>
                   <SelectItem value="Part-time">Part-time</SelectItem>
                   <SelectItem value="Internship">Internship</SelectItem>
@@ -318,7 +318,7 @@ export default function JobsPage() {
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Locations</SelectItem>
+                  <SelectItem value="all">All Locations</SelectItem>
                   <SelectItem value="Bangalore">Bangalore</SelectItem>
                   <SelectItem value="Delhi">Delhi</SelectItem>
                   <SelectItem value="Mumbai">Mumbai</SelectItem>
@@ -327,7 +327,7 @@ export default function JobsPage() {
                 </SelectContent>
               </Select>
               
-              <Button variant="outline" onClick={() => setFilter({ type: "", location: "", salary: "" })}>
+              <Button variant="outline" onClick={() => setFilter({ type: "all", location: "all", salary: "" })}>
                 <Filter className="mr-2 h-4 w-4" />
                 Reset Filters
               </Button>
