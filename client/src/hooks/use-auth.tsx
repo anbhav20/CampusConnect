@@ -1,133 +1,322 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useState, useEffect, useContext } from "react";
 import {
   useQuery,
   useMutation,
   UseMutationResult,
-  QueryClientProvider,
 } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser, InsertUser, LoginUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
+import { auth } from "@/lib/firebase";
+import {
+  signInWithGoogle,
+  signInWithGithub,
+  signInWithEmail,
+  signUpWithEmail,
+  logOut,
+  resetPassword,
+  updateUserProfile,
+} from "@/lib/firebase";
+import { User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
+import { User as AppUser, InsertUser } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 type AuthContextType = {
-  user: SelectUser | null;
+  firebaseUser: FirebaseUser | null;
+  user: AppUser | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<SelectUser, Error, LoginUser>;
-  logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
+  registerWithEmail: (email: string, password: string, username: string) => Promise<void>;
+  logout: () => Promise<void>;
+  resetUserPassword: (email: string) => Promise<void>;
+  updateProfile: (data: { displayName?: string, photoURL?: string }) => Promise<void>;
 };
 
-const defaultAuthContext: AuthContextType = {
-  user: null,
-  isLoading: false,
-  error: null,
-  loginMutation: {} as UseMutationResult<SelectUser, Error, LoginUser>,
-  logoutMutation: {} as UseMutationResult<void, Error, void>,
-  registerMutation: {} as UseMutationResult<SelectUser, Error, InsertUser>,
-};
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
-
-// This wrapper component ensures React Query is available before Auth Provider
-export function AuthProviderWithDeps({ children }: { children: ReactNode }) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
-    </QueryClientProvider>
-  );
-}
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [firebaseLoading, setFirebaseLoading] = useState(true);
+  const [firebaseError, setFirebaseError] = useState<Error | null>(null);
+
+  // Listen for Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        setFirebaseUser(user);
+        setFirebaseLoading(false);
+      },
+      (error) => {
+        setFirebaseError(error as Error);
+        setFirebaseLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // If we have a Firebase user, get the application user
   const {
     data: user,
     error,
-    isLoading,
-  } = useQuery<SelectUser | null, Error>({
+    isLoading: isUserLoading,
+  } = useQuery<AppUser | null, Error>({
     queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: async () => {
+      if (!firebaseUser) return null;
+
+      try {
+        // First try to get the user directly
+        const response = await apiRequest("GET", "/api/user");
+        if (response.ok) {
+          return await response.json();
+        }
+
+        // If that fails, we need to authenticate with Firebase
+        const idToken = await firebaseUser.getIdToken();
+        const registerResponse = await apiRequest("POST", "/api/firebase-auth", {
+          firebase_uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          auth_type: getAuthProvider(firebaseUser.providerData[0]?.providerId),
+          full_name: firebaseUser.displayName,
+          profile_picture: firebaseUser.photoURL,
+        });
+
+        if (!registerResponse.ok) {
+          throw new Error("Failed to authenticate with server");
+        }
+
+        return await registerResponse.json();
+      } catch (err) {
+        console.error("Error in user query:", err);
+        return null;
+      }
+    },
+    enabled: !!firebaseUser && !firebaseLoading,
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginUser) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+  // Helper to determine auth type from provider ID
+  const getAuthProvider = (providerId?: string): string => {
+    switch (providerId) {
+      case "google.com":
+        return "google";
+      case "github.com":
+        return "github";
+      case "phone":
+        return "phone";
+      default:
+        return "email";
+    }
+  };
+
+  // Login with email
+  const loginWithEmail = async (email: string, password: string) => {
+    try {
+      await signInWithEmail(email, password);
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.username}!`,
+        title: "Login successful!",
+        description: "Welcome back!",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid username or password",
+        description: error.message,
         variant: "destructive",
       });
-    },
-  });
+      throw error;
+    }
+  };
 
-  const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+  // Login with Google
+  const loginWithGoogle = async () => {
+    try {
+      await signInWithGoogle();
       toast({
-        title: "Registration successful",
-        description: `Welcome to Campus Connect, ${user.username}!`,
+        title: "Login successful!",
+        description: "Welcome back!",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Login with GitHub
+  const loginWithGithub = async () => {
+    try {
+      await signInWithGithub();
+      toast({
+        title: "Login successful!",
+        description: "Welcome back!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Register with email
+  const registerWithEmail = async (email: string, password: string, username: string) => {
+    try {
+      const userCredential = await signUpWithEmail(email, password);
+      
+      // Create user on our backend
+      const response = await apiRequest("POST", "/api/register", {
+        username,
+        email,
+        password,
+        firebase_uid: userCredential.user.uid,
+        auth_type: "email",
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Registration failed");
+      }
+      
+      toast({
+        title: "Registration successful!",
+        description: "Your account has been created.",
+      });
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: error.message || "Could not create account. Try a different username.",
+        description: error.message,
         variant: "destructive",
       });
-    },
-  });
+      throw error;
+    }
+  };
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
+  // Logout
+  const logout = async () => {
+    try {
+      // Logout from Firebase
+      await logOut();
+      
+      // Logout from server
       await apiRequest("POST", "/api/logout");
-    },
-    onSuccess: () => {
+      
+      // Clear user data
       queryClient.setQueryData(["/api/user"], null);
+      
       toast({
         title: "Logged out",
-        description: "You have been successfully logged out.",
+        description: "You have been logged out successfully.",
       });
-    },
-    onError: (error: Error) => {
+      
+      // Redirect to auth page
+      setLocation("/auth");
+    } catch (error: any) {
       toast({
         title: "Logout failed",
         description: error.message,
         variant: "destructive",
       });
-    },
-  });
+      throw error;
+    }
+  };
+
+  // Reset password
+  const resetUserPassword = async (email: string) => {
+    try {
+      await resetPassword(email);
+      toast({
+        title: "Password reset email sent",
+        description: "Check your email for a link to reset your password.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Password reset failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Update profile
+  const updateProfile = async (data: { displayName?: string, photoURL?: string }) => {
+    try {
+      if (!firebaseUser) throw new Error("Not authenticated");
+      
+      // Update Firebase profile
+      await updateUserProfile(firebaseUser, data);
+      
+      // Update backend profile
+      if (data.displayName) {
+        await apiRequest("PATCH", "/api/user", {
+          full_name: data.displayName,
+        });
+      }
+      
+      if (data.photoURL) {
+        await apiRequest("PATCH", "/api/user", {
+          profile_picture: data.photoURL,
+        });
+      }
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Profile update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Combine loading states
+  const isLoading = firebaseLoading || (!!firebaseUser && isUserLoading);
 
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        firebaseUser,
+        user,
         isLoading,
-        error,
-        loginMutation,
-        logoutMutation,
-        registerMutation,
+        error: firebaseError || error,
+        loginWithEmail,
+        loginWithGoogle,
+        loginWithGithub,
+        registerWithEmail,
+        logout,
+        resetUserPassword,
+        updateProfile,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
-}
+};
