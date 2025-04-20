@@ -129,12 +129,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
+      
+      // Redirect to home page
+      setLocation("/home");
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -165,12 +168,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
+      
+      // Redirect to home page
+      setLocation("/home");
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -201,12 +207,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
+      
+      // Redirect to home page
+      setLocation("/home");
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -237,12 +246,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
+      
+      // Redirect to home page
+      setLocation("/home");
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -278,7 +290,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      // Redirect to home page
+      setLocation("/home");
     } catch (error: any) {
       toast({
         title: "Registration failed",

@@ -121,12 +121,12 @@ export default function ProfilePage() {
   
   const handleFollow = () => {
     if (!profile) return;
-    followMutation.mutate(profile.username);
+    followMutation.mutate(profile.id.toString());
   };
   
   const handleUnfollow = () => {
     if (!profile) return;
-    unfollowMutation.mutate(profile.username);
+    unfollowMutation.mutate(profile.id.toString());
   };
   
   const handleProfileAction = (action: string) => {
@@ -161,8 +161,8 @@ export default function ProfilePage() {
     }
   };
   
-  const handleRemoveFollower = (username: string) => {
-    removeFollowerMutation.mutate(username);
+  const handleRemoveFollower = (userId: number) => {
+    removeFollowerMutation.mutate(userId.toString());
   };
   
   const handleUploadProfilePicture = () => {
@@ -333,7 +333,7 @@ export default function ProfilePage() {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleRemoveFollower(follower.username)}
+                              onClick={() => handleRemoveFollower(follower.id)}
                               disabled={removeFollowerMutation.isPending}
                             >
                               {removeFollowerMutation.isPending ? (
@@ -346,7 +346,7 @@ export default function ProfilePage() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => unfollowMutation.mutate(follower.username)}
+                                onClick={() => unfollowMutation.mutate(follower.id.toString())}
                                 disabled={unfollowMutation.isPending}
                               >
                                 {unfollowMutation.isPending ? (
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                             ) : (
                               <Button 
                                 size="sm"
-                                onClick={() => followMutation.mutate(follower.username)}
+                                onClick={() => followMutation.mutate(follower.id.toString())}
                                 disabled={followMutation.isPending}
                               >
                                 {followMutation.isPending ? (
@@ -410,7 +410,7 @@ export default function ProfilePage() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => unfollowMutation.mutate(followed.username)}
+                            onClick={() => unfollowMutation.mutate(followed.id.toString())}
                             disabled={unfollowMutation.isPending}
                           >
                             {unfollowMutation.isPending ? (
@@ -443,7 +443,7 @@ export default function ProfilePage() {
         </div>
         
         {/* Highlights */}
-        {profile.highlights.length > 0 && (
+        {profile.highlights && profile.highlights.length > 0 && (
           <div className="flex space-x-6 mt-6 px-4 overflow-x-auto py-2">
             {profile.highlights.map(highlight => (
               <div key={highlight.id} className="flex flex-col items-center">

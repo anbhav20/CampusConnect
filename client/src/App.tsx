@@ -4,8 +4,9 @@ import LandingPage from "@/pages/landing-page";
 import AuthPage from "@/pages/auth-page";
 import HomePage from "@/pages/home-page";
 import ProfilePage from "@/pages/profile-page";
-import ExplorePage from "@/pages/explore-page";
+import SearchPage from "@/pages/search-page";
 import JobsPage from "@/pages/jobs-page";
+import ProfileSettings from "@/pages/settings/profile";
 import { ProtectedRoute } from "./lib/protected-route";
 import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
@@ -42,7 +43,7 @@ function Router() {
         <ProtectedRoute path="/home" component={HomePage} />
         <ProtectedRoute path="/profile" component={ProfilePage} />
         <ProtectedRoute path="/profile/:username" component={ProfilePage} />
-        <ProtectedRoute path="/explore" component={ExplorePage} />
+        <ProtectedRoute path="/explore" component={SearchPage} />
         <ProtectedRoute path="/jobs" component={JobsPage} />
         <ProtectedRoute path="/nearby" component={() => <Placeholder title="Nearby Users" />} />
         
@@ -68,7 +69,7 @@ function Router() {
         
         {/* User Settings */}
         <ProtectedRoute path="/settings" component={() => <Placeholder title="Settings" />} />
-        <ProtectedRoute path="/settings/profile" component={() => <Placeholder title="Edit Profile" />} />
+        <ProtectedRoute path="/settings/profile" component={ProfileSettings} />
         <ProtectedRoute path="/settings/account" component={() => <Placeholder title="Account Settings" />} />
         <ProtectedRoute path="/settings/privacy" component={() => <Placeholder title="Privacy Settings" />} />
         <ProtectedRoute path="/settings/blocked" component={() => <Placeholder title="Blocked Accounts" />} />

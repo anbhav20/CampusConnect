@@ -83,7 +83,6 @@ export default function Sidebar() {
   const mainNavItems = [
     { icon: <Home size={24} />, label: "Home", path: "/home" },
     { icon: <Search size={24} />, label: "Search", path: "/explore" },
-    { icon: <Compass size={24} />, label: "Explore", path: "/explore" },
     { icon: <Users size={24} />, label: "College Groups", path: "/groups" },
     { icon: <Briefcase size={24} />, label: "Jobs", path: "/jobs" },
     { icon: <MapPin size={24} />, label: "Nearby", path: "/nearby" },
@@ -93,8 +92,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white hidden md:block">
-      <div className="flex h-full flex-col justify-between py-5">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white hidden md:block shadow-sm">
+      <div className="flex h-full flex-col justify-between py-5 overflow-y-auto">
         <div>
           <div className="px-5 mb-8">
             <Link href="/">
@@ -138,7 +137,7 @@ export default function Sidebar() {
           </nav>
         </div>
         
-        <div className="px-3">
+        <div className="px-3 mt-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 

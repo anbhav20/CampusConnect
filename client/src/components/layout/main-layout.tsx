@@ -1,11 +1,10 @@
 import { ReactNode } from 'react';
 import Sidebar from './sidebar';
 import MobileNav from './mobile-nav';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'wouter';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 
 interface MainLayoutProps {
@@ -16,18 +15,15 @@ interface MainLayoutProps {
 export default function MainLayout({ children, title }: MainLayoutProps) {
   const { user } = useAuth();
   
-  // Get first letter of username for avatar fallback
-  const userInitial = user?.username?.[0]?.toUpperCase() || 'U';
-  
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Sidebar - hidden on mobile */}
       <Sidebar />
       
       {/* Main content */}
-      <main className="flex-1 md:ml-64 pt-16 pb-20 md:pb-10">
+      <main className="flex-1 md:ml-64 pt-16 pb-safe w-full">
         {/* Header */}
-        <header className="fixed top-0 right-0 left-0 md:left-64 z-30 bg-white border-b border-gray-200 h-16 flex items-center px-4">
+        <header className="fixed top-0 right-0 left-0 md:left-64 z-40 bg-white border-b border-gray-200 h-16 flex items-center px-4 shadow-sm">
           <div className="w-full max-w-screen-xl mx-auto flex items-center justify-between">
             {/* Left: Title or Logo for mobile */}
             <div className="md:hidden">
@@ -45,7 +41,7 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
               </div>
             </div>
             
-            {/* Right: Notifications & User Menu */}
+            {/* Right: Notifications & Messages */}
             <div className="flex items-center space-x-4">
               <Link href="/notifications">
                 <Button variant="ghost" size="icon" className="relative">
@@ -54,18 +50,18 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
                 </Button>
               </Link>
               
-              <Link href="/profile">
-                <Avatar className="h-8 w-8 cursor-pointer">
-                  <AvatarImage src={user?.profile_picture || ""} alt={user?.username || ""} />
-                  <AvatarFallback>{userInitial}</AvatarFallback>
-                </Avatar>
+              <Link href="/messages">
+                <Button variant="ghost" size="icon" className="relative">
+                  <MessageCircle size={24} />
+                  <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-blue-500"></span>
+                </Button>
               </Link>
             </div>
           </div>
         </header>
         
-        {/* Page content */}
-        <div className="p-4 max-w-screen-xl mx-auto">
+        {/* Page content - with proper padding to avoid content being hidden under the mobile nav */}
+        <div className="p-4 pb-24 md:pb-6 max-w-screen-xl mx-auto">
           {title && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
           {children}
         </div>

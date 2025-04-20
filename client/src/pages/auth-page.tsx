@@ -24,8 +24,7 @@ export default function AuthPage() {
     e.preventDefault();
     try {
       await loginWithUsername(loginUsername, loginPassword);
-      // Immediately redirect to home page after successful login
-      setLocation("/home");
+      // Redirection is now handled in the auth hook
     } catch (error) {
       console.error("Login error:", error);
     }
@@ -34,8 +33,7 @@ export default function AuthPage() {
   const handleGoogleAuth = async () => {
     try {
       await loginWithGoogle();
-      // Immediately redirect to home page after successful Google login
-      setLocation("/home");
+      // Redirection is now handled in the auth hook
     } catch (error) {
       console.error("Google auth error:", error);
     }
@@ -44,8 +42,7 @@ export default function AuthPage() {
   const handleGithubAuth = async () => {
     try {
       await loginWithGithub();
-      // Immediately redirect to home page after successful GitHub login
-      setLocation("/home");
+      // Redirection is now handled in the auth hook
     } catch (error) {
       console.error("GitHub auth error:", error);
     }
@@ -59,8 +56,7 @@ export default function AuthPage() {
     
     try {
       await registerWithEmail(registerEmail, registerPassword, registerUsername);
-      // Immediately redirect to home page after successful registration
-      setLocation("/home");
+      // Redirection is now handled in the auth hook
     } catch (error) {
       console.error("Registration error:", error);
     }

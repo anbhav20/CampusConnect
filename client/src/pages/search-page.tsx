@@ -21,7 +21,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
-export default function ExplorePage() {
+export default function SearchPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");

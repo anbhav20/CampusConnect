@@ -10,8 +10,7 @@ export default function SocialAuthButtons() {
   const handleGoogleAuth = async () => {
     try {
       await loginWithGoogle();
-      // Immediately redirect to home page
-      setLocation("/home");
+      // Redirection is now handled in the auth hook
     } catch (error) {
       console.error("Google auth error:", error);
     }
@@ -20,8 +19,7 @@ export default function SocialAuthButtons() {
   const handleGithubAuth = async () => {
     try {
       await loginWithGithub();
-      // Immediately redirect to home page
-      setLocation("/home");
+      // Redirection is now handled in the auth hook
     } catch (error) {
       console.error("GitHub auth error:", error);
     }
