@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { LoaderCircle } from "lucide-react";
+import { FaGoogle, FaGithub } from "react-icons/fa";
 
 export default function AuthPage() {
   const [loginUsername, setLoginUsername] = useState("");
@@ -16,14 +17,30 @@ export default function AuthPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   
-  const { user, loginWithEmail, registerWithEmail, isLoading } = useAuth();
+  const { user, loginWithUsername, loginWithGoogle, loginWithGithub, registerWithEmail, isLoading } = useAuth();
   
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await loginWithEmail(loginUsername, loginPassword);
+      await loginWithUsername(loginUsername, loginPassword);
     } catch (error) {
       console.error("Login error:", error);
+    }
+  };
+  
+  const handleGoogleAuth = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error("Google auth error:", error);
+    }
+  };
+  
+  const handleGithubAuth = async () => {
+    try {
+      await loginWithGithub();
+    } catch (error) {
+      console.error("GitHub auth error:", error);
     }
   };
   
@@ -92,7 +109,7 @@ export default function AuthPage() {
                       />
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="flex flex-col space-y-4">
                     <Button 
                       type="submit" 
                       className="w-full"
@@ -105,6 +122,40 @@ export default function AuthPage() {
                         </>
                       ) : "Login"}
                     </Button>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-gray-500">
+                          Or continue with
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleGoogleAuth}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <FaGoogle className="h-4 w-4 text-red-500" />
+                        Google
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleGithubAuth}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <FaGithub className="h-4 w-4" />
+                        GitHub
+                      </Button>
+                    </div>
                   </CardFooter>
                 </form>
               </TabsContent>
@@ -159,7 +210,7 @@ export default function AuthPage() {
                       />
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="flex flex-col space-y-4">
                     <Button 
                       type="submit" 
                       className="w-full"
@@ -172,6 +223,40 @@ export default function AuthPage() {
                         </>
                       ) : "Create Account"}
                     </Button>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-gray-500">
+                          Or sign up with
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleGoogleAuth}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <FaGoogle className="h-4 w-4 text-red-500" />
+                        Google
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleGithubAuth}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <FaGithub className="h-4 w-4" />
+                        GitHub
+                      </Button>
+                    </div>
                   </CardFooter>
                 </form>
               </TabsContent>

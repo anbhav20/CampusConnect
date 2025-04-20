@@ -26,6 +26,7 @@ type AuthContextType = {
   isLoading: boolean;
   error: Error | null;
   loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithUsername: (username: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
   registerWithEmail: (email: string, password: string, username: string) => Promise<void>;
@@ -111,6 +112,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return "phone";
       default:
         return "email";
+    }
+  };
+
+  // Login with username
+  const loginWithUsername = async (username: string, password: string) => {
+    try {
+      // First, try to get the user's email from the username
+      const response = await apiRequest("POST", "/api/login", {
+        username,
+        password,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Invalid username or password");
+      }
+      
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      toast({
+        title: "Login successful!",
+        description: "Welcome back!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
     }
   };
 
@@ -354,6 +385,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         error: firebaseError || error,
         loginWithEmail,
+        loginWithUsername,
         loginWithGoogle,
         loginWithGithub,
         registerWithEmail,
