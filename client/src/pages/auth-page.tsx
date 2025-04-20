@@ -16,28 +16,28 @@ export default function AuthPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   
-  const { user, loginMutation, registerMutation, isLoading } = useAuth();
+  const { user, loginWithEmail, registerWithEmail, isLoading } = useAuth();
   
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({
-      username: loginUsername,
-      password: loginPassword
-    });
+    try {
+      await loginWithEmail(loginUsername, loginPassword);
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
   
-  const handleRegister = (e: FormEvent) => {
+  const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     if (registerPassword !== registerConfirmPassword) {
       return; // Add error handling for password mismatch
     }
     
-    registerMutation.mutate({
-      username: registerUsername,
-      email: registerEmail,
-      password: registerPassword,
-      auth_type: "email"
-    });
+    try {
+      await registerWithEmail(registerEmail, registerPassword, registerUsername);
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
   };
   
   // Redirect if user is already logged in
@@ -96,9 +96,9 @@ export default function AuthPage() {
                     <Button 
                       type="submit" 
                       className="w-full"
-                      disabled={loginMutation.isPending}
+                      disabled={isLoading}
                     >
-                      {loginMutation.isPending ? (
+                      {isLoading ? (
                         <>
                           <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                           Logging in...
@@ -163,9 +163,9 @@ export default function AuthPage() {
                     <Button 
                       type="submit" 
                       className="w-full"
-                      disabled={registerMutation.isPending}
+                      disabled={isLoading}
                     >
-                      {registerMutation.isPending ? (
+                      {isLoading ? (
                         <>
                           <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                           Creating account...

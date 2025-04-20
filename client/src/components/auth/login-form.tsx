@@ -2,30 +2,33 @@ import { useAuth } from "@/hooks/use-auth";
 import EmailForm from "@/components/auth/email-form";
 import { LoginUser } from "@shared/schema";
 import { useLocation } from "wouter";
+import { useState } from "react";
 
 export default function LoginForm() {
-  const { loginMutation } = useAuth();
+  const { loginWithEmail, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [error, setError] = useState<string | null>(null);
   
-  const handleSubmit = (data: LoginUser) => {
-    loginMutation.mutate(data, {
-      onSuccess: () => {
-        setLocation("/home");
-      }
-    });
+  const handleSubmit = async (data: LoginUser) => {
+    try {
+      await loginWithEmail(data.username, data.password);
+      setLocation("/home");
+    } catch (err) {
+      setError((err as Error).message || "Invalid username or password");
+    }
   };
   
   return (
     <div>
       <EmailForm 
         onSubmit={handleSubmit} 
-        isLoading={loginMutation.isPending} 
+        isLoading={isLoading} 
         type="login"
       />
       
-      {loginMutation.isError && (
+      {error && (
         <p className="text-red-500 text-sm mt-2">
-          {loginMutation.error?.message || "Invalid username or password"}
+          {error}
         </p>
       )}
     </div>

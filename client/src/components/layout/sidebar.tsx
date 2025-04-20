@@ -13,13 +13,22 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export default function Sidebar() {
-  const { user, logoutMutation } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [location] = useLocation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const navItems = [
@@ -65,10 +74,10 @@ export default function Sidebar() {
             variant="ghost" 
             className="w-full justify-start text-base font-normal"
             onClick={handleLogout}
-            disabled={logoutMutation.isPending}
+            disabled={isLoggingOut}
           >
             <span className="mr-3"><Menu size={24} /></span>
-            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </Button>
         </div>
       </div>

@@ -8,8 +8,9 @@ import { InsertUser } from "@shared/schema";
 import { useLocation } from "wouter";
 
 export default function RegisterForm() {
-  const { registerMutation } = useAuth();
+  const { registerWithEmail, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     username: "",
@@ -24,18 +25,14 @@ export default function RegisterForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const userData: InsertUser = {
-      ...formData,
-      auth_type: "email",
-    };
-    
-    registerMutation.mutate(userData, {
-      onSuccess: () => {
-        setLocation("/home");
-      }
-    });
+    try {
+      await registerWithEmail(formData.email, formData.password, formData.username);
+      setLocation("/home");
+    } catch (err) {
+      setError((err as Error).message || "Could not create account. Try a different username.");
+    }
   };
   
   return (
@@ -98,14 +95,14 @@ export default function RegisterForm() {
       <Button 
         type="submit" 
         className="w-full" 
-        disabled={registerMutation.isPending}
+        disabled={isLoading}
       >
-        {registerMutation.isPending ? "Creating Account..." : "Sign up"}
+        {isLoading ? "Creating Account..." : "Sign up"}
       </Button>
       
-      {registerMutation.isError && (
+      {error && (
         <p className="text-red-500 text-sm mt-2">
-          {registerMutation.error?.message || "Could not create account. Try a different username."}
+          {error}
         </p>
       )}
     </form>

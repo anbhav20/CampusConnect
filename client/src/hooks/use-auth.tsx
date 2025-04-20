@@ -22,7 +22,7 @@ import { useLocation } from "wouter";
 
 type AuthContextType = {
   firebaseUser: FirebaseUser | null;
-  user: AppUser | null;
+  user: AppUser | null | undefined;
   isLoading: boolean;
   error: Error | null;
   loginWithEmail: (email: string, password: string) => Promise<void>;
@@ -296,7 +296,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         firebaseUser,
-        user,
+        user: user === undefined ? null : user,
         isLoading,
         error: firebaseError || error,
         loginWithEmail,
