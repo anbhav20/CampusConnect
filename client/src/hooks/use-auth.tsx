@@ -19,6 +19,8 @@ import { User as AppUser, InsertUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { connectSocket, disconnectSocket } from "@/lib/socketClient";
+import { updateRelatedQueries } from "@/lib/queryEnhancer";
 
 type AuthContextType = {
   firebaseUser: FirebaseUser | null;
@@ -135,6 +137,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Refresh user data in the cache
       queryClient.setQueryData(["/api/user"], userData);
+      
+      // Connect to socket for real-time updates
+      if (userData?.id) {
+        connectSocket(userData.id);
+      }
+      
+      // Invalidate all related queries to ensure fresh data
+      updateRelatedQueries(queryClient, "/api/user", [
+        "/api/feed",
+        "/api/notifications",
+        "/api/messages",
+        "/api/followers",
+        "/api/following"
+      ]);
       
       // Force a refetch to ensure we have the latest data
       await refetchUser();
@@ -349,13 +365,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout
   const logout = async () => {
     try {
+      // Disconnect from socket
+      disconnectSocket();
+      
       // Logout from Firebase
       await logOut();
       
       // Logout from server
       await apiRequest("POST", "/api/logout");
       
-      // Clear user data
+      // Clear all cached data
+      queryClient.clear();
+      
+      // Set user data to null
       queryClient.setQueryData(["/api/user"], null);
       
       toast({

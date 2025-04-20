@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { ConnectionStatus } from '@/components/ui/connection-status';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -41,8 +42,11 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
               </div>
             </div>
             
-            {/* Right: Notifications & Messages */}
+            {/* Right: Connection Status, Notifications & Messages */}
             <div className="flex items-center space-x-4">
+              {/* Connection Status */}
+              <ConnectionStatus className="mr-2 hidden sm:flex" />
+              
               <Link href="/notifications">
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell size={24} />

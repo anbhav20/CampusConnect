@@ -19,7 +19,7 @@ import {
   Heart,
   Loader2
 } from "lucide-react";
-import MainLayout from "@/components/layout/main-layout";
+import ProfileLayout from "@/components/layout/profile-layout";
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -107,24 +107,24 @@ export default function ProfilePage() {
   // Handle errors
   if (profileError) {
     return (
-      <MainLayout>
+      <ProfileLayout title="Profile" isProfilePage={true}>
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <div className="text-red-500 mb-4">Error loading profile</div>
           <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
-      </MainLayout>
+      </ProfileLayout>
     );
   }
   
   // Handle loading state
   if (isLoading || !profile) {
     return (
-      <MainLayout>
+      <ProfileLayout title="Profile" isProfilePage={true}>
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
           <div>Loading profile...</div>
         </div>
-      </MainLayout>
+      </ProfileLayout>
     );
   }
   
@@ -197,7 +197,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <MainLayout>
+    <ProfileLayout title={profile.displayName || "Profile"} isProfilePage={true}>
       {/* Profile Header */}
       <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -568,6 +568,6 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ProfileLayout>
   );
 }

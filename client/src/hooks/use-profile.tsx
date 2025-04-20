@@ -50,6 +50,9 @@ export function useProfileData(username: string | undefined) {
   return useQuery<ProfileData>({
     queryKey: [`/api/user`, username], // Include username in the query key for proper caching
     staleTime: 0, // Always consider data stale to ensure fresh data
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnReconnect: true, // Refetch when network reconnects
+    refetchInterval: 60 * 1000, // Refetch every minute to ensure data is fresh
     queryFn: async () => {
       try {
         // For development, use mock API
@@ -320,6 +323,12 @@ export function useUpdateProfile() {
       
       // Then invalidate to ensure any other components get updated
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      // Also invalidate related queries that might display user data
+      queryClient.invalidateQueries({ queryKey: ["/api/feed"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/followers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/following"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
     },
     onError: (error: any) => {
       toast({

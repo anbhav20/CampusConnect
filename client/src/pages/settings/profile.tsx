@@ -6,8 +6,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useRealtime } from "@/hooks/use-realtime";
 import { useProfileData, useUpdateProfile, profileUpdateSchema } from "@/hooks/use-profile";
-import MainLayout from "@/components/layout/main-layout";
+import { updateRelatedQueries } from "@/lib/queryEnhancer";
+import ProfileLayout from "@/components/layout/profile-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,18 +105,38 @@ export default function ProfileSettings() {
   // Profile update mutation using the hook
   const updateProfileMutation = useUpdateProfile();
   
+  // Get real-time context
+  const { isConnected } = useRealtime();
+  
   // Handle form submission
   const onSubmit = async (data: ProfileFormValues) => {
     try {
-      await updateProfileMutation.mutateAsync(data);
+      const updatedProfile = await updateProfileMutation.mutateAsync(data);
       
-      // Force a refetch of the profile data to ensure UI is updated
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Update the cache with the new data
+      queryClient.setQueryData(["/api/user"], updatedProfile);
+      
+      // Update all related queries to ensure UI is updated everywhere
+      updateRelatedQueries(queryClient, "/api/user", [
+        "/api/feed", 
+        "/api/followers", 
+        "/api/following"
+      ]);
       
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
+        variant: isConnected ? "default" : "warning",
       });
+      
+      // If not connected to real-time updates, show a warning
+      if (!isConnected) {
+        toast({
+          title: "Offline mode",
+          description: "Changes may not be visible to others until you reconnect.",
+          variant: "warning",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Update failed",
@@ -158,13 +180,28 @@ export default function ProfileSettings() {
           // Update the profile data in the cache
           queryClient.setQueryData(["/api/user"], data);
           
-          // Force a refetch to ensure we have the latest data
-          await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+          // Update all related queries to ensure UI is updated everywhere
+          updateRelatedQueries("/api/user", [
+            "/api/feed", 
+            "/api/followers", 
+            "/api/following",
+            "/api/messages"
+          ]);
           
           toast({
             title: "Profile picture updated",
             description: "Your profile picture has been updated successfully.",
+            variant: isConnected ? "default" : "warning",
           });
+          
+          // If not connected to real-time updates, show a warning
+          if (!isConnected) {
+            toast({
+              title: "Offline mode",
+              description: "Changes may not be visible to others until you reconnect.",
+              variant: "warning",
+            });
+          }
         } catch (error: any) {
           toast({
             title: "Upload failed",
@@ -181,16 +218,16 @@ export default function ProfileSettings() {
   
   if (isProfileLoading) {
     return (
-      <MainLayout title="Edit Profile">
+      <ProfileLayout title="Edit Profile">
         <div className="flex justify-center items-center h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </MainLayout>
+      </ProfileLayout>
     );
   }
   
   return (
-    <MainLayout title="Edit Profile">
+    <ProfileLayout title="Edit Profile">
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardHeader>
@@ -365,6 +402,6 @@ export default function ProfileSettings() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </ProfileLayout>
   );
 }
