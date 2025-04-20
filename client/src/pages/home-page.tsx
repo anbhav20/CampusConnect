@@ -2,7 +2,22 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share, Bookmark } from "lucide-react";
+import { 
+  Heart, 
+  MessageCircle, 
+  Share, 
+  Bookmark, 
+  MoreVertical, 
+  PlusCircle 
+} from "lucide-react";
+import MainLayout from "@/components/layout/main-layout";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -12,47 +27,88 @@ export default function HomePage() {
     {
       id: 1,
       username: "drs.jaishankar",
+      userFullName: "Dr. S. Jaishankar",
       isVerified: true,
       avatar: "",
       timeAgo: "1h",
       image: "/placeholder-meeting.jpg",
       caption: "Productive meeting with German Foreign Minister @ABaerbock. Discussed taking forward our bilateral relationship. Exchanged views on Ukraine, Indo-Pacific and our G20 collaboration.",
       likes: 1847,
+      commentCount: 42,
     },
     {
       id: 2,
       username: "campus_connect_official",
+      userFullName: "Campus Connect",
       isVerified: true,
       avatar: "",
       timeAgo: "3h",
       image: "/placeholder-campus.jpg",
       caption: "Join us for the upcoming campus event! #CampusConnect",
       likes: 542,
+      commentCount: 18,
+    },
+    {
+      id: 3,
+      username: "tech_society",
+      userFullName: "Tech Society, IIT Delhi",
+      isVerified: false,
+      avatar: "",
+      timeAgo: "5h",
+      image: "/placeholder-tech.jpg",
+      caption: "Our annual hackathon is back! Register now to participate and win exciting prizes. #TechFest #Hackathon",
+      likes: 328,
+      commentCount: 24,
     }
   ];
 
+  // Sample stories data
+  const stories = [
+    { username: "your_story", avatar: "", isYourStory: true },
+    { username: "ezsnippet", avatar: "", isYourStory: false },
+    { username: "_nidhi.72", avatar: "", isYourStory: false },
+    { username: "drs.jaishankar", avatar: "", isYourStory: false },
+    { username: "tech_society", avatar: "", isYourStory: false },
+    { username: "campus_events", avatar: "", isYourStory: false },
+    { username: "sports_club", avatar: "", isYourStory: false },
+    { username: "placement_cell", avatar: "", isYourStory: false },
+  ];
+
+  const handlePostAction = (action: string, postId: number) => {
+    console.log(`Action ${action} on post ${postId}`);
+    // Here you would implement the actual functionality based on the action
+  };
+
   return (
-    <div className="max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Home</h1>
-      
+    <MainLayout>
       {/* Stories Section */}
-      <div className="flex space-x-4 overflow-x-auto py-4 mb-6">
-        {["ezsnippet", "_nidhi.72", "drs.jaishankar"].map((username, i) => (
-          <div key={i} className="flex flex-col items-center space-y-1">
-            <div className="rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
-              <Avatar className="h-16 w-16 cursor-pointer">
-                <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
+      <div className="bg-white rounded-lg p-4 shadow-sm mb-6 overflow-hidden">
+        <div className="flex space-x-4 overflow-x-auto py-2 -mx-2 px-2">
+          {stories.map((story, i) => (
+            <div key={i} className="flex flex-col items-center space-y-1 min-w-[72px]">
+              <div className={`rounded-full p-[2px] ${story.isYourStory ? 'bg-white border-2 border-dashed border-gray-300' : 'bg-gradient-to-tr from-yellow-400 to-fuchsia-600'}`}>
+                <div className="relative">
+                  <Avatar className="h-16 w-16 cursor-pointer">
+                    {story.isYourStory ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-full">
+                        <PlusCircle className="h-8 w-8 text-primary" />
+                      </div>
+                    ) : (
+                      <AvatarFallback>{story.username.charAt(0).toUpperCase()}</AvatarFallback>
+                    )}
+                  </Avatar>
+                </div>
+              </div>
+              <span className="text-xs truncate w-16 text-center">{story.isYourStory ? "Your story" : story.username}</span>
             </div>
-            <span className="text-xs truncate w-16 text-center">{username}</span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       
       {/* Posts Feed */}
       <div className="space-y-6">
         {posts.map(post => (
-          <Card key={post.id} className="overflow-hidden">
+          <Card key={post.id} className="overflow-hidden shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center">
                 <Avatar className="h-8 w-8 mr-2">
@@ -71,13 +127,29 @@ export default function HomePage() {
                   </div>
                   <span className="text-xs text-gray-500">{post.timeAgo}</span>
                 </div>
-                <Button variant="ghost" size="icon" className="ml-auto">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="19" cy="12" r="1" />
-                    <circle cx="5" cy="12" r="1" />
-                  </svg>
-                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-auto">
+                      <MoreVertical className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handlePostAction('block', post.id)}>
+                      Block
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handlePostAction('message', post.id)}>
+                      Send Message
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handlePostAction('share', post.id)}>
+                      Share To
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handlePostAction('copy', post.id)}>
+                      Copy Link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -116,12 +188,27 @@ export default function HomePage() {
                 <span className="text-sm">{post.caption}</span>
               </div>
               <Button variant="ghost" className="text-gray-500 text-xs mt-1 px-0">
-                View all comments
+                View all {post.commentCount} comments
               </Button>
+              <div className="w-full mt-2">
+                <div className="flex items-center space-x-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>{user?.username?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+                  </Avatar>
+                  <input 
+                    type="text" 
+                    placeholder="Add a comment..." 
+                    className="text-sm text-gray-500 bg-transparent outline-none flex-1"
+                  />
+                  <Button variant="ghost" size="sm" className="text-primary text-xs font-semibold">
+                    Post
+                  </Button>
+                </div>
+              </div>
             </CardFooter>
           </Card>
         ))}
       </div>
-    </div>
+    </MainLayout>
   );
 }
