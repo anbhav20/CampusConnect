@@ -1,0 +1,154 @@
+Campus Connect: Updated Documentation (With Google, GitHub, and Email Signup/Login)
+1. App Overview
+Campus Connect is a social networking platform designed for college students to network, find verified jobs, share academic resources, and connect with nearby people. It offers job listings, academic posts, user profiles, stories, and official college groups. The app provides multiple ways for users to sign up and log in, ensuring flexibility and ease of access.
+
+2. Key Features
+a. Core Features
+Home Page: Displays posts from users, including job updates, academic posts, and general social interactions.
+
+Search Page: Allows users to search for jobs, profiles, posts, and groups.
+
+Create Post: Users can upload media (images, documents, etc.), create posts, and share them with their network.
+
+Job Listings: Verified job opportunities posted by users and companies, with the ability to apply directly from the app.
+
+Profile: Users can set their profile with their personal details, skills, hobbies, college name, etc. Users can edit their profiles and update their unique usernames.
+
+Stories: A vertical scrollable story bar, similar to Instagram, allowing users to share 30-second stories.
+
+College Groups: Users can join official college groups, share notes, PDFs, and other media. Only one official college group can exist per college.
+
+b. Enhanced Authentication
+Multiple Signup/Login Options:
+
+Google: Users can sign up/log in using their Google account.
+
+GitHub: Users can sign up/log in using their GitHub account.
+
+Email: Users can sign up/log in using email, username, and password. Email-based signup requires users to choose a unique username during registration.
+
+Users will be presented with the option to log in using either Google, GitHub, or Email. The authentication flow will ensure a smooth, secure experience for users.
+
+3. Free Technology Stack
+a. Frontend
+React (for web apps) - Free and open-source JavaScript library for building user interfaces.
+
+React Native (for mobile apps) - Free framework for building mobile apps using React.
+
+TailwindCSS - Free, open-source CSS framework for custom designs.
+
+b. Backend
+Node.js with Express.js: Server-side technology to handle API requests.
+
+Firebase (Free Tier):
+
+Firebase Authentication: Supports Google, GitHub, and Email/Password signups and logins.
+
+Firebase Firestore: Database for storing user data, posts, and other app-related data.
+
+Firebase Cloud Messaging (FCM): For sending notifications to users.
+
+c. Database
+MongoDB Atlas (Free Tier) - Cloud-based NoSQL database to store user data.
+
+Firebase Firestore: Another option for managing real-time data.
+
+d. Real-Time Features
+Socket.IO: For real-time chat and notifications.
+
+e. Hosting
+Netlify (Free) - Hosting the web app, integrates serverless functions for the backend.
+
+Firebase Hosting (Free) - Static content hosting with SSL certificates.
+
+4. Authentication Flow
+a. Login Page
+Users will have the option to log in via Google, GitHub, or Email:
+
+Google Login: Users can click the Login with Google button to authenticate with their Google account.
+
+GitHub Login: Users can click the Login with GitHub button to authenticate with their GitHub account.
+
+Email Login: Users enter their username and password. If the username and password match, they are logged in.
+
+b. Signup Page
+Users will have the option to sign up via Google, GitHub, or Email:
+
+Google Signup: Users click the Sign up with Google button to sign up via Google account.
+
+GitHub Signup: Users click the Sign up with GitHub button to sign up via GitHub account.
+
+Email Signup: Users will need to provide the following information:
+
+Username: A unique username that is validated to ensure no duplicates.
+
+Email: User's email address.
+
+Password: A password for account protection.
+
+Once the form is filled, the user is registered, and their data is stored in Firebase Authentication.
+
+5. User Flow & Interface
+Login Process:
+
+Users are presented with options to log in via Google, GitHub, or email.
+
+Email Login: After entering their credentials (username and password), users are redirected to the Home Page.
+
+Google/GitHub Login: Once authenticated, users are also redirected to the Home Page.
+
+Signup Process:
+
+Users can sign up by selecting one of the following methods:
+
+Google Signup: Click to sign up via their Google account.
+
+GitHub Signup: Click to sign up via their GitHub account.
+
+Email Signup: Enter username, email, and password.
+
+After successful registration, users will be redirected to the Profile Setup page where they can customize their profile.
+
+Home Page:
+
+Displays posts from the network, job updates, and a vertical story bar for 30-second stories.
+
+Users can scroll through the feed and engage with posts.
+
+Profile Page:
+
+Users can view and edit their profile, including their username, email, college name, hobbies, skills, and other personal details.
+
+Users can update their unique username, but the system ensures that it remains unique.
+
+Create Post:
+
+Users can create a post, uploading images, documents, or text. After creating the post, it will be shared on their home feed.
+
+6. App Monetization (Optional)
+Ads:
+
+You can consider adding Google AdSense (Free) for displaying ads in the web version of the app.
+
+Freemium Model:
+
+Future premium features can include advanced profile customization, additional storage, or boosting visibility for jobs and posts.
+
+7. Data Privacy & Security
+User Data Protection: Use Firebase Authentication to secure user logins with email/password or third-party services (Google, GitHub).
+
+Encrypted Communication: All communication and data between users will be encrypted with SSL/TLS via Firebase Hosting.
+
+GDPR Compliance: Ensure transparency with data collection and usage.
+
+8. Future Considerations
+As the app grows, you can:
+
+Add Additional Authentication Providers: You can integrate more options for signups and logins (such as Facebook, Twitter).
+
+Upgrade Database Storage: As your app grows, you can consider moving to paid Firebase plans or using AWS or Google Cloud services for storage.
+
+Analytics: Integrate Firebase Analytics or Google Analytics to track user behavior.
+
+9. Summary
+This updated Campus Connect app now includes a user-friendly authentication system that supports Google, GitHub, and Email logins/signups. All of this is integrated using Firebase Authentication, ensuring security and ease of use. The core features, including posts, job listings, stories, and group collaboration, remain intact with a focus on using free technologies to keep costs low.
