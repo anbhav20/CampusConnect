@@ -2,23 +2,54 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    try {
+      // Try to parse as JSON first
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await res.json();
+        console.error('API Error:', errorData);
+        throw new Error(errorData.message || errorData.error || `${res.status}: ${res.statusText}`);
+      } else {
+        // If not JSON, get as text
+        const text = await res.text();
+        console.error('API Error (text):', text);
+        throw new Error(`${res.status}: ${text || res.statusText}`);
+      }
+    } catch (parseError) {
+      if (parseError instanceof Error && parseError.message !== `${res.status}: ${res.statusText}`) {
+        console.error('Error parsing error response:', parseError);
+      }
+      throw new Error(`${res.status}: ${res.statusText}`);
+    }
   }
 }
+
+// API base URL - adjust this to match your backend URL
+const API_BASE_URL = 'https://campusconnect-production-b7f6.up.railway.app'; // Railway deployed app
 
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // Make sure URL starts with the API base URL
+  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+  
+  console.log(`Making ${method} request to: ${fullUrl}`);
+  
+  const res = await fetch(fullUrl, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      // Add any other headers your API might need
+    },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 
+  // Log response status for debugging
+  console.log(`Response status: ${res.status} ${res.statusText}`);
+  
   await throwIfResNotOk(res);
   return res;
 }
@@ -29,16 +60,30 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const url = queryKey[0] as string;
+    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+    
+    console.log(`Making GET request to: ${fullUrl}`);
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
+    
+    console.log(`Response status: ${res.status} ${res.statusText}`);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    
+    try {
+      return await res.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      console.log('Response text:', await res.clone().text());
+      throw new Error('Invalid JSON response from server');
+    }
   };
 
 export const queryClient = new QueryClient({
