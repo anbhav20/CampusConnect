@@ -13,7 +13,8 @@ import {
   MessageCircle, 
   Share, 
   Copy, 
-  Users
+  Users,
+  Heart
 } from "lucide-react";
 import MainLayout from "@/components/layout/main-layout";
 import { useToast } from "@/hooks/use-toast";
