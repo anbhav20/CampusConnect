@@ -1,82 +1,236 @@
-import { useEffect } from "react";
+import { useState, FormEvent } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-import AuthForm from "@/components/auth/auth-form";
+import { Redirect } from "wouter";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { LoaderCircle } from "lucide-react";
 
 export default function AuthPage() {
-  const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   
-  useEffect(() => {
-    if (user && !isLoading) {
-      setLocation("/home");
+  const { user, loginMutation, registerMutation, isLoading } = useAuth();
+  
+  const handleLogin = (e: FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate({
+      username: loginUsername,
+      password: loginPassword
+    });
+  };
+  
+  const handleRegister = (e: FormEvent) => {
+    e.preventDefault();
+    if (registerPassword !== registerConfirmPassword) {
+      return; // Add error handling for password mismatch
     }
-  }, [user, isLoading, setLocation]);
+    
+    registerMutation.mutate({
+      username: registerUsername,
+      email: registerEmail,
+      password: registerPassword,
+      auth_type: "email"
+    });
+  };
+  
+  // Redirect if user is already logged in
+  if (user) {
+    return <Redirect to="/home" />;
+  }
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            {/* Auth form */}
-            <div className="flex justify-center">
-              <AuthForm />
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Left Column - Auth Form */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 px-6 py-12">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold italic">Campus Connect</h1>
+            <p className="text-gray-600 mt-2">Connect with students and colleges</p>
+          </div>
+          
+          <Card>
+            <Tabs defaultValue="login">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <form onSubmit={handleLogin}>
+                  <CardHeader>
+                    <CardTitle>Login</CardTitle>
+                    <CardDescription>
+                      Enter your credentials to access your account
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-username">Username</Label>
+                      <Input 
+                        id="login-username" 
+                        type="text"
+                        value={loginUsername}
+                        onChange={(e) => setLoginUsername(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Password</Label>
+                      <Input 
+                        id="login-password" 
+                        type="password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? (
+                        <>
+                          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                          Logging in...
+                        </>
+                      ) : "Login"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register">
+                <form onSubmit={handleRegister}>
+                  <CardHeader>
+                    <CardTitle>Create Account</CardTitle>
+                    <CardDescription>
+                      Register to join the Campus Connect community
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-username">Username</Label>
+                      <Input 
+                        id="register-username" 
+                        type="text"
+                        value={registerUsername}
+                        onChange={(e) => setRegisterUsername(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">Email</Label>
+                      <Input 
+                        id="register-email" 
+                        type="email"
+                        value={registerEmail}
+                        onChange={(e) => setRegisterEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password">Password</Label>
+                      <Input 
+                        id="register-password" 
+                        type="password"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                      <Input 
+                        id="register-confirm-password" 
+                        type="password"
+                        value={registerConfirmPassword}
+                        onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={registerMutation.isPending}
+                    >
+                      {registerMutation.isPending ? (
+                        <>
+                          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                          Creating account...
+                        </>
+                      ) : "Create Account"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </Card>
+          
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-600">
+              By continuing, you agree to Campus Connect's Terms of Service and Privacy Policy.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Right Column - Hero */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-tr from-blue-600 to-indigo-800 text-white">
+        <div className="max-w-md mx-auto p-8 flex flex-col justify-center">
+          <h2 className="text-4xl font-bold mb-6">Connect with your campus community</h2>
+          <p className="text-xl mb-8">Join Campus Connect to discover job opportunities, join college groups, and connect with fellow students.</p>
+          
+          <div className="space-y-6">
+            <div className="flex items-start">
+              <div className="bg-white bg-opacity-20 p-2 rounded-full mr-4">
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm1-3a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-1">Find job opportunities</h3>
+                <p className="text-white text-opacity-80">Discover internships and job opportunities tailored for students.</p>
+              </div>
             </div>
             
-            {/* Hero section */}
-            <div className="hidden md:block">
-              <div className="max-w-md mx-auto">
-                <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                  <span className="block">Welcome to</span>
-                  <span className="block text-primary">Campus Connect</span>
-                </h2>
-                <p className="mt-4 text-lg text-gray-600">
-                  Join the premier social network for college students. Connect with peers, find verified job opportunities, and share academic resources.
-                </p>
-                
-                <div className="mt-8 space-y-6">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-sm text-gray-700">
-                      <strong className="font-medium text-gray-900">Exclusive Community:</strong> Verified college students only
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-sm text-gray-700">
-                      <strong className="font-medium text-gray-900">Verified Jobs:</strong> Opportunities tailored to college students
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-sm text-gray-700">
-                      <strong className="font-medium text-gray-900">Resource Sharing:</strong> Exchange notes, documents, and study materials
-                    </p>
-                  </div>
-                </div>
+            <div className="flex items-start">
+              <div className="bg-white bg-opacity-20 p-2 rounded-full mr-4">
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm1-3a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-1">Join college groups</h3>
+                <p className="text-white text-opacity-80">Connect with clubs, societies, and academic groups at your institution.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="bg-white bg-opacity-20 p-2 rounded-full mr-4">
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm1-3a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-1">Build your network</h3>
+                <p className="text-white text-opacity-80">Connect with fellow students, professors, and alumni.</p>
               </div>
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import {
   useQuery,
   useMutation,
   UseMutationResult,
+  QueryClientProvider,
 } from "@tanstack/react-query";
 import { insertUserSchema, User as SelectUser, InsertUser, LoginUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
@@ -17,7 +18,25 @@ type AuthContextType = {
   registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  isLoading: false,
+  error: null,
+  loginMutation: {} as UseMutationResult<SelectUser, Error, LoginUser>,
+  logoutMutation: {} as UseMutationResult<void, Error, void>,
+  registerMutation: {} as UseMutationResult<SelectUser, Error, InsertUser>,
+};
+
+export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
+
+// This wrapper component ensures React Query is available before Auth Provider
+export function AuthProviderWithDeps({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
@@ -110,8 +129,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
   return context;
 }
