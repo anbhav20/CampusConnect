@@ -66,6 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     data: user,
     error,
     isLoading: isUserLoading,
+    refetch: refetchUser
   } = useQuery<AppUser | null, Error>({
     queryKey: ["/api/user"],
     queryFn: async () => {
@@ -99,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     },
     enabled: !!firebaseUser && !firebaseLoading,
+    staleTime: 0, // Always consider data stale to ensure fresh data
   });
 
   // Helper to determine auth type from provider ID
@@ -128,16 +130,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Invalid username or password");
       }
       
-      // Refresh user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Get the user data from the response
+      const userData = await response.json();
+      
+      // Refresh user data in the cache
+      queryClient.setQueryData(["/api/user"], userData);
+      
+      // Force a refetch to ensure we have the latest data
+      await refetchUser();
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
       
-      // Redirect to home page
-      setLocation("/home");
+      // Redirect to home page after a short delay to ensure state is updated
+      setTimeout(() => {
+        setLocation("/home");
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -167,16 +177,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Failed to authenticate with server");
       }
       
-      // Refresh user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Get the user data from the response
+      const userData = await response.json();
+      
+      // Refresh user data in the cache
+      queryClient.setQueryData(["/api/user"], userData);
+      
+      // Force a refetch to ensure we have the latest data
+      await refetchUser();
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
       
-      // Redirect to home page
-      setLocation("/home");
+      // Redirect to home page after a short delay to ensure state is updated
+      setTimeout(() => {
+        setLocation("/home");
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -206,16 +224,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Failed to authenticate with server");
       }
       
-      // Refresh user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Get the user data from the response
+      const userData = await response.json();
+      
+      // Refresh user data in the cache
+      queryClient.setQueryData(["/api/user"], userData);
+      
+      // Force a refetch to ensure we have the latest data
+      await refetchUser();
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
       
-      // Redirect to home page
-      setLocation("/home");
+      // Redirect to home page after a short delay to ensure state is updated
+      setTimeout(() => {
+        setLocation("/home");
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -245,16 +271,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Failed to authenticate with server");
       }
       
-      // Refresh user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Get the user data from the response
+      const userData = await response.json();
+      
+      // Refresh user data in the cache
+      queryClient.setQueryData(["/api/user"], userData);
+      
+      // Force a refetch to ensure we have the latest data
+      await refetchUser();
       
       toast({
         title: "Login successful!",
         description: "Welcome back!",
       });
       
-      // Redirect to home page
-      setLocation("/home");
+      // Redirect to home page after a short delay to ensure state is updated
+      setTimeout(() => {
+        setLocation("/home");
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -284,16 +318,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(errorData.error || "Registration failed");
       }
       
+      // Get the user data from the response
+      const userData = await response.json();
+      
+      // Set user data in the cache
+      queryClient.setQueryData(["/api/user"], userData);
+      
+      // Force a refetch to ensure we have the latest data
+      await refetchUser();
+      
       toast({
         title: "Registration successful!",
         description: "Your account has been created.",
       });
       
-      // Refresh user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      
-      // Redirect to home page
-      setLocation("/home");
+      // Redirect to home page after a short delay to ensure state is updated
+      setTimeout(() => {
+        setLocation("/home");
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Registration failed",

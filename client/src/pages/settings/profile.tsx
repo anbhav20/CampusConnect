@@ -104,8 +104,24 @@ export default function ProfileSettings() {
   const updateProfileMutation = useUpdateProfile();
   
   // Handle form submission
-  const onSubmit = (data: ProfileFormValues) => {
-    updateProfileMutation.mutate(data);
+  const onSubmit = async (data: ProfileFormValues) => {
+    try {
+      await updateProfileMutation.mutateAsync(data);
+      
+      // Force a refetch of the profile data to ensure UI is updated
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    }
   };
   
   // Handle profile picture upload
@@ -140,7 +156,10 @@ export default function ProfileSettings() {
           const data = await response.json();
           
           // Update the profile data in the cache
-          queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+          queryClient.setQueryData(["/api/user"], data);
+          
+          // Force a refetch to ensure we have the latest data
+          await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
           
           toast({
             title: "Profile picture updated",

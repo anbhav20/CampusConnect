@@ -49,6 +49,7 @@ export function useProfileData(username: string | undefined) {
   
   return useQuery<ProfileData>({
     queryKey: [`/api/user`, username], // Include username in the query key for proper caching
+    staleTime: 0, // Always consider data stale to ensure fresh data
     queryFn: async () => {
       try {
         // For development, use mock API
@@ -314,13 +315,11 @@ export function useUpdateProfile() {
       return response.json();
     },
     onSuccess: (data) => {
-      // Invalidate and refetch all profile data queries
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Update the cache with the new data
+      queryClient.setQueryData(["/api/user"], data);
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
+      // Then invalidate to ensure any other components get updated
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
     },
     onError: (error: any) => {
       toast({

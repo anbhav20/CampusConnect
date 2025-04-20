@@ -147,17 +147,37 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ error: "Firebase UID and email are required" });
       }
       
-      // Check if user already exists by firebase_uid
+      // First check if user already exists by firebase_uid
       let user = await storage.getUserByFirebaseUID(firebase_uid);
+      
+      // If no user found by firebase_uid, check if a user exists with the same email
+      if (!user) {
+        const userByEmail = await storage.getUserByEmail(email);
+        
+        if (userByEmail) {
+          // User exists with this email but different firebase_uid
+          // Update the user's firebase_uid to link the accounts
+          user = await storage.updateUser(userByEmail.id, {
+            firebase_uid,
+            auth_type: auth_type || userByEmail.auth_type,
+            // Only update these if they're not already set
+            full_name: userByEmail.full_name || full_name,
+            profile_picture: userByEmail.profile_picture || profile_picture,
+          });
+          
+          console.log(`Linked existing account for email ${email} with Firebase UID ${firebase_uid}`);
+        }
+      }
       
       if (user) {
         // User exists, log them in
+        // Update last login time or other relevant fields if needed
         req.login(user, (err) => {
           if (err) return next(err);
           return res.status(200).json(user);
         });
       } else {
-        // User doesn't exist, create a new account
+        // User doesn't exist at all, create a new account
         const username = await generateUsername(email);
         
         // Generate a random password for the user (they'll use Firebase for auth)
@@ -173,6 +193,8 @@ export function setupAuth(app: Express) {
           full_name,
           profile_picture,
         });
+        
+        console.log(`Created new user account for email ${email} with Firebase UID ${firebase_uid}`);
         
         req.login(user, (err) => {
           if (err) return next(err);

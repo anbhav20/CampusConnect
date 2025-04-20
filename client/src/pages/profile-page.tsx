@@ -2,6 +2,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { 
   Grid, 
   Bookmark, 
@@ -58,6 +60,13 @@ export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const [followersDialogOpen, setFollowersDialogOpen] = useState(false);
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Force refresh profile data when component mounts
+  useEffect(() => {
+    // Invalidate and refetch profile data when the component mounts
+    queryClient.invalidateQueries({ queryKey: ['/api/user', params.username] });
+  }, [queryClient, params.username]);
   
   // Check if viewing own profile or someone else's
   const isOwnProfile = !params.username || (user && params.username === user.username);
