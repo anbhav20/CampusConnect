@@ -5,9 +5,11 @@ import AuthPage from "@/pages/auth-page";
 import HomePage from "@/pages/home-page";
 import ProfilePage from "@/pages/profile-page";
 import ExplorePage from "@/pages/explore-page";
+import JobsPage from "@/pages/jobs-page";
 import { ProtectedRoute } from "./lib/protected-route";
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
+import MainLayout from "@/components/layout/main-layout";
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -15,6 +17,17 @@ const LoadingFallback = () => (
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
     <span className="ml-2 text-muted-foreground">Loading...</span>
   </div>
+);
+
+// Placeholder for components that are not fully implemented yet
+const Placeholder = ({ title }: { title: string }) => (
+  <MainLayout>
+    <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+      <h1 className="text-2xl font-bold mb-4">{title}</h1>
+      <p className="text-gray-500 mb-2">This feature is coming soon!</p>
+      <p className="text-sm text-gray-400">We're working hard to bring you this functionality.</p>
+    </div>
+  </MainLayout>
 );
 
 function Router() {
@@ -30,126 +43,36 @@ function Router() {
         <ProtectedRoute path="/profile" component={ProfilePage} />
         <ProtectedRoute path="/profile/:username" component={ProfilePage} />
         <ProtectedRoute path="/explore" component={ExplorePage} />
+        <ProtectedRoute path="/jobs" component={JobsPage} />
+        <ProtectedRoute path="/nearby" component={() => <Placeholder title="Nearby Users" />} />
         
         {/* Social Features */}
-        <ProtectedRoute path="/messages" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Messages</h1>
-            <p>Your messages will appear here.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/messages/:roomId" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Chat Room</h1>
-            <p>Your chat conversation will appear here.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/notifications" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Notifications</h1>
-            <p>Your notifications will appear here.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/create" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Create New Post</h1>
-            <p>Create and share new content.</p>
-          </div>
-        )} />
+        <ProtectedRoute path="/messages" component={() => <Placeholder title="Messages" />} />
+        <ProtectedRoute path="/messages/:roomId" component={() => <Placeholder title="Chat Room" />} />
+        <ProtectedRoute path="/notifications" component={() => <Placeholder title="Notifications" />} />
+        <ProtectedRoute path="/create" component={() => <Placeholder title="Create New Post" />} />
         
         {/* College Groups */}
-        <ProtectedRoute path="/groups" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">College Groups</h1>
-            <p>Join and participate in college groups.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/groups/:groupId" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Group Details</h1>
-            <p>View group posts and members.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/groups/create" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Create New Group</h1>
-            <p>Create a new college group.</p>
-          </div>
-        )} />
+        <ProtectedRoute path="/groups" component={() => <Placeholder title="College Groups" />} />
+        <ProtectedRoute path="/groups/create" component={() => <Placeholder title="Create New Group" />} />
+        <ProtectedRoute path="/groups/:groupId" component={() => <Placeholder title="Group Details" />} />
         
-        {/* Jobs & Career */}
-        <ProtectedRoute path="/jobs" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Job Listings</h1>
-            <p>Find internships and job opportunities.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/jobs/:jobId" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Job Details</h1>
-            <p>View job details and apply.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/jobs/create" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Post New Job</h1>
-            <p>Create a new job listing.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/jobs/applications" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">My Applications</h1>
-            <p>Your job applications will appear here.</p>
-          </div>
-        )} />
-        
-        {/* Nearby Users */}
-        <ProtectedRoute path="/nearby" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Nearby Users</h1>
-            <p>Discover students around your location.</p>
-          </div>
-        )} />
+        {/* Jobs & Career - need to define specific routes before parameterized routes */}
+        <ProtectedRoute path="/jobs/create" component={() => <Placeholder title="Post New Job" />} />
+        <ProtectedRoute path="/jobs/applications" component={() => <Placeholder title="My Applications" />} />
+        <ProtectedRoute path="/jobs/:jobId" component={() => <Placeholder title="Job Details" />} />
         
         {/* Stories & Reels */}
-        <ProtectedRoute path="/stories" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Stories</h1>
-            <p>View stories from people you follow.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/reels" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Reels</h1>
-            <p>Watch short videos from creators.</p>
-          </div>
-        )} />
+        <ProtectedRoute path="/stories" component={() => <Placeholder title="Stories" />} />
+        <ProtectedRoute path="/reels" component={() => <Placeholder title="Reels" />} />
         
         {/* User Settings */}
-        <ProtectedRoute path="/settings" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Settings</h1>
-            <p>Manage your account settings.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/settings/profile" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Edit Profile</h1>
-            <p>Update your profile information.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/settings/account" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
-            <p>Manage your account preferences.</p>
-          </div>
-        )} />
-        <ProtectedRoute path="/settings/privacy" component={() => (
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Privacy Settings</h1>
-            <p>Manage your privacy preferences.</p>
-          </div>
-        )} />
+        <ProtectedRoute path="/settings" component={() => <Placeholder title="Settings" />} />
+        <ProtectedRoute path="/settings/profile" component={() => <Placeholder title="Edit Profile" />} />
+        <ProtectedRoute path="/settings/account" component={() => <Placeholder title="Account Settings" />} />
+        <ProtectedRoute path="/settings/privacy" component={() => <Placeholder title="Privacy Settings" />} />
+        <ProtectedRoute path="/settings/blocked" component={() => <Placeholder title="Blocked Accounts" />} />
+        <ProtectedRoute path="/settings/notifications" component={() => <Placeholder title="Notification Preferences" />} />
         
         {/* Fallback for 404 */}
         <Route component={NotFound} />

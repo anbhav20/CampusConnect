@@ -242,6 +242,11 @@ export default function JobsPage() {
   };
   
   const filteredJobs = filterJobs();
+  
+  const navigateToListingsTab = () => {
+    const element = document.querySelector('[data-state="inactive"][value="listings"]') as HTMLElement;
+    if (element) element.click();
+  };
 
   return (
     <MainLayout>
@@ -526,7 +531,7 @@ export default function JobsPage() {
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 You haven't applied to any jobs yet. Browse available opportunities and start your application process.
               </p>
-              <Button onClick={() => document.querySelector('[data-state="inactive"][value="listings"]')?.click()}>
+              <Button onClick={navigateToListingsTab}>
                 Browse Jobs
               </Button>
             </div>
@@ -590,7 +595,7 @@ export default function JobsPage() {
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 You haven't saved any jobs yet. Bookmark jobs to quickly find them later.
               </p>
-              <Button onClick={() => document.querySelector('[data-state="inactive"][value="listings"]')?.click()}>
+              <Button onClick={navigateToListingsTab}>
                 Browse Jobs
               </Button>
             </div>
