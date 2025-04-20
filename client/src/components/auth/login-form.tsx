@@ -13,6 +13,7 @@ export default function LoginForm() {
   const handleSubmit = async (data: LoginUser) => {
     try {
       await loginWithUsername(data.username, data.password);
+      // Immediately redirect to home page
       setLocation("/home");
     } catch (err) {
       setError((err as Error).message || "Invalid username or password");
@@ -22,6 +23,7 @@ export default function LoginForm() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
+      // Immediately redirect to home page
       setLocation("/home");
     } catch (err) {
       setError((err as Error).message || "Google login failed");
@@ -31,6 +33,7 @@ export default function LoginForm() {
   const handleGithubLogin = async () => {
     try {
       await loginWithGithub();
+      // Immediately redirect to home page
       setLocation("/home");
     } catch (err) {
       setError((err as Error).message || "GitHub login failed");

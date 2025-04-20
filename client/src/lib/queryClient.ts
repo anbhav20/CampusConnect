@@ -25,7 +25,10 @@ async function throwIfResNotOk(res: Response) {
 }
 
 // API base URL - adjust this to match your backend URL
-const API_BASE_URL = 'https://campusconnect-production-b7f6.up.railway.app'; // Railway deployed app
+// Use local server in development, deployed app in production
+const API_BASE_URL = import.meta.env.DEV 
+  ? '' // Empty string means use relative URLs (same origin)
+  : 'https://campusconnect-3hmf.onrender.com'; // Render deployed app
 
 export async function apiRequest(
   method: string,
@@ -45,6 +48,7 @@ export async function apiRequest(
     },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
+    mode: "cors",
   });
 
   // Log response status for debugging
@@ -67,6 +71,7 @@ export const getQueryFn: <T>(options: {
     
     const res = await fetch(fullUrl, {
       credentials: "include",
+      mode: "cors",
     });
     
     console.log(`Response status: ${res.status} ${res.statusText}`);

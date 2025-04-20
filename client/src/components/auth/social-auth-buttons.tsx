@@ -1,16 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { FaGoogle, FaGithub } from "react-icons/fa";
+import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
 
 export default function SocialAuthButtons() {
-  // These would need to be implemented with actual OAuth providers
-  const handleGoogleAuth = () => {
-    // Placeholder for Google OAuth
-    alert("Google authentication would be implemented here.");
+  const { loginWithGoogle, loginWithGithub } = useAuth();
+  const [, setLocation] = useLocation();
+  
+  const handleGoogleAuth = async () => {
+    try {
+      await loginWithGoogle();
+      // Immediately redirect to home page
+      setLocation("/home");
+    } catch (error) {
+      console.error("Google auth error:", error);
+    }
   };
   
-  const handleGithubAuth = () => {
-    // Placeholder for GitHub OAuth
-    alert("GitHub authentication would be implemented here.");
+  const handleGithubAuth = async () => {
+    try {
+      await loginWithGithub();
+      // Immediately redirect to home page
+      setLocation("/home");
+    } catch (error) {
+      console.error("GitHub auth error:", error);
+    }
   };
   
   return (

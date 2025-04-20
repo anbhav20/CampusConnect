@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ export default function AuthPage() {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
+  const [, setLocation] = useLocation();
   
   const { user, loginWithUsername, loginWithGoogle, loginWithGithub, registerWithEmail, isLoading } = useAuth();
   
@@ -23,6 +24,8 @@ export default function AuthPage() {
     e.preventDefault();
     try {
       await loginWithUsername(loginUsername, loginPassword);
+      // Immediately redirect to home page after successful login
+      setLocation("/home");
     } catch (error) {
       console.error("Login error:", error);
     }
@@ -31,6 +34,8 @@ export default function AuthPage() {
   const handleGoogleAuth = async () => {
     try {
       await loginWithGoogle();
+      // Immediately redirect to home page after successful Google login
+      setLocation("/home");
     } catch (error) {
       console.error("Google auth error:", error);
     }
@@ -39,6 +44,8 @@ export default function AuthPage() {
   const handleGithubAuth = async () => {
     try {
       await loginWithGithub();
+      // Immediately redirect to home page after successful GitHub login
+      setLocation("/home");
     } catch (error) {
       console.error("GitHub auth error:", error);
     }
@@ -52,6 +59,8 @@ export default function AuthPage() {
     
     try {
       await registerWithEmail(registerEmail, registerPassword, registerUsername);
+      // Immediately redirect to home page after successful registration
+      setLocation("/home");
     } catch (error) {
       console.error("Registration error:", error);
     }

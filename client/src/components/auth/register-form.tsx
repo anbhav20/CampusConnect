@@ -29,6 +29,7 @@ export default function RegisterForm() {
     e.preventDefault();
     try {
       await registerWithEmail(formData.email, formData.password, formData.username);
+      // Immediately redirect to home page
       setLocation("/home");
     } catch (err) {
       setError((err as Error).message || "Could not create account. Try a different username.");
@@ -38,6 +39,7 @@ export default function RegisterForm() {
   const handleGoogleSignup = async () => {
     try {
       await loginWithGoogle();
+      // Immediately redirect to home page
       setLocation("/home");
     } catch (err) {
       setError((err as Error).message || "Google signup failed");
@@ -47,6 +49,7 @@ export default function RegisterForm() {
   const handleGithubSignup = async () => {
     try {
       await loginWithGithub();
+      // Immediately redirect to home page
       setLocation("/home");
     } catch (err) {
       setError((err as Error).message || "GitHub signup failed");

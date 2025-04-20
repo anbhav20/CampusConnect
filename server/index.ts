@@ -1,8 +1,39 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
+
 
 const app = express();
+
+// Configure CORS - Different for development and production
+if (app.get('env') === 'development') {
+  // In development, allow localhost
+  app.use(cors({
+    origin: ['http://localhost:5000', 'http://localhost:3000'],
+    credentials: true
+  }));
+} else {
+  // In production, only allow the Render domain
+  app.use(cors({
+    origin: 'https://campusconnect-3hmf.onrender.com',
+    credentials: true
+  }));
+}
+
+// Configure CORS
+const corsOptions = {
+  origin: [
+    'http://localhost:5000',
+    'http://localhost:3000',
+    'https://campusconnect-production-b7f6.up.railway.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -39,12 +70,15 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // Handle OPTIONS preflight requests for CORS
+  app.options('*', cors(corsOptions));
+  
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error(err);
   });
 
   // importantly only setup vite in development and after
@@ -62,8 +96,9 @@ app.use((req, res, next) => {
   const port = process.env.PORT || 5000;
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: "localhost",
+   // host: "0.0.0.0",
+    //reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
   });
